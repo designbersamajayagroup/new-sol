@@ -12,7 +12,7 @@ interface NumPadInputButton {
 }
 
 interface NumPadProps {
-    ammountValue: string;
+    ammountValue: string; // Ganti 'ammountValue' menjadi 'ammountValue' (sesuai nama prop yang digunakan)
 }
 
 const NumPadButton: FC<NumPadInputButton> = ({ input, onInput }) => {
@@ -24,7 +24,7 @@ const NumPadButton: FC<NumPadInputButton> = ({ input, onInput }) => {
     );
 };
 
-export const NumPad: FC<NumPadProps> = ({ ammountValue }) => {
+export const NumPad: FC<NumPadProps> = ({ ammountValue }) => { // Ganti 'ammountValue' menjadi 'ammountValue' (sesuai nama prop yang digunakan)
     const { symbol, decimals } = useConfig();
     const regExp = useMemo(() => new RegExp('^\\d*([.,]\\d{0,' + decimals + '})?$'), [decimals]);
 
