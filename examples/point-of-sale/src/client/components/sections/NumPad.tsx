@@ -1,10 +1,12 @@
-import BigNumber from 'bignumber.js';
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useConfig } from '../../hooks/useConfig';
 import { usePayment } from '../../hooks/usePayment';
 import { Digits } from '../../types';
 import { BackspaceIcon } from '../images/BackspaceIcon';
 import css from './NumPad.module.css';
+
+// Import React Router
+import { useLocation } from 'react-router-dom';
 
 interface NumPadInputButton {
     input: Digits | '.';
@@ -42,10 +44,18 @@ export const NumPad: FC = () => {
     const { setAmount } = usePayment();
     useEffect(() => setAmount(value ? new BigNumber(value) : undefined), [setAmount, value]);
 
+    // Get the `ammountValue` parameter from the URL
+    const ammountValue = useLocation().searchParams.get('ammountValue');
+
+    // Set the value of the `importValue` div to the `ammountValue` parameter
+    if (ammountValue) {
+        document.getElementById('importValue').textContent = ammountValue;
+    }
+
     return (
         <div className={css.root}>
             <div className={css.text}>Enter amount in {symbol}</div>
-            <div className={css.value}>{value}</div>
+            <div className={css.value} id="importValue"></div>
             <div className={css.buttons}>
                 <div className={css.row}>
                     <NumPadButton input={1} onInput={onInput} />
