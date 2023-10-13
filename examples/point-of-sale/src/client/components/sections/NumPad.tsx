@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import React, { FC, useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useConfig } from '../../hooks/useConfig';
 import { usePayment } from '../../hooks/usePayment';
 import { Digits } from '../../types';
@@ -20,33 +20,30 @@ const NumPadButton: FC<NumPadInputButton> = ({ input, onInput }) => {
     );
 };
 
-export const NumPad: FC<{ ammountValue: string }> = ({ ammountValue }) => {
+interface NumPadProps {
+    amountValue: string;
+}
+
+const NumPad: FC<NumPadProps> = ({ amountValue }) => {
     const { symbol, decimals } = useConfig();
     const regExp = useMemo(() => new RegExp('^\\d*([.,]\\d{0,' + decimals + '})?$'), [decimals]);
 
-    const [value, setValue] = useState(ammountValue);
-
-    const valueRef = useRef(value);
+    const [value, setValue] = useState(amountValue || '0');
 
     const onInput = useCallback(
-        (key: Digits | '.') => {
-            valueRef.current = (valueRef.current + key).trim().replace(/^0{2,}/, '0');
-            if (valueRef.current) {
-                valueRef.current = /^[.,]/.test(valueRef.current)
-                    ? `0${valueRef.current}`
-                    : valueRef.current.replace(/^0+(\d)/, '$1');
-                if (regExp.test(valueRef.current)) {
-                    setValue(valueRef.current);
+        (key: Digits | '.') =>
+            setValue((value) => {
+                let newValue = (value + key).trim().replace(/^0{2,}/, '0');
+                if (newValue) {
+                    newValue = /^[.,]/.test(newValue) ? `0${newValue}` : newValue.replace(/^0+(\d)/, '$1');
+                    if (regExp.test(newValue)) return newValue;
                 }
-            }
-        },
+                return value;
+            }),
         [regExp]
     );
 
-    const onBackspace = useCallback(() => {
-        valueRef.current = valueRef.current.length ? valueRef.current.slice(0, -1) || '0' : valueRef.current;
-        setValue(valueRef.current);
-    }, []);
+    const onBackspace = useCallback(() => setValue((value) => (value.length ? value.slice(0, -1) || '0' : value)), []);
 
     const { setAmount } = usePayment();
     useEffect(() => setAmount(value ? new BigNumber(value) : undefined), [setAmount, value]);
@@ -61,7 +58,7 @@ export const NumPad: FC<{ ammountValue: string }> = ({ ammountValue }) => {
                     <NumPadButton input={2} onInput={onInput} />
                     <NumPadButton input={3} onInput={onInput} />
                 </div>
-                <div className={css.row">
+                <div className={css.row}>
                     <NumPadButton input={4} onInput={onInput} />
                     <NumPadButton input={5} onInput={onInput} />
                     <NumPadButton input={6} onInput={onInput} />
@@ -82,3 +79,5 @@ export const NumPad: FC<{ ammountValue: string }> = ({ ammountValue }) => {
         </div>
     );
 };
+
+export default NumPad;
