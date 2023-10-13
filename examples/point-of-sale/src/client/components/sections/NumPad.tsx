@@ -26,9 +26,9 @@ export const NumPad: FC = () => {
 
     // Retrieve ammountValue from the URL using URLSearchParams
     const urlParams = new URLSearchParams(window.location.search);
-    const initialAmmountValue = urlParams.get('ammountValue') || '0';
+    const initialAmountValue = urlParams.get('ammountValue') || '0';
 
-    const [value, setValue] = useState(initialAmmountValue);
+    const [value, setValue] = useState(initialAmountValue);
     const onInput = useCallback(
         (key: Digits | '.') =>
             setValue((value) => {
@@ -46,10 +46,18 @@ export const NumPad: FC = () => {
     const { setAmount } = usePayment();
     useEffect(() => setAmount(value ? new BigNumber(value) : undefined), [setAmount, value]);
 
+    // Use value to set the content of the specified div
+    useEffect(() => {
+        const valueDiv = document.querySelector('.NumPad_value__dLsnj');
+        if (valueDiv) {
+            valueDiv.textContent = value;
+        }
+    }, [value]);
+
     return (
         <div className={css.root}>
             <div className={css.text}>Enter amount in {symbol}</div>
-            <div className={css.value}>{value}</div>
+            <div className={css.value}>0</div>
             <div className={css.buttons}>
                 <div className={css.row}>
                     <NumPadButton input={1} onInput={onInput} />
