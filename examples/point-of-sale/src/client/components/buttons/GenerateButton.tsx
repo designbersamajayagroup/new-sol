@@ -3,7 +3,7 @@ import { usePayment } from '../../hooks/usePayment';
 import css from './GenerateButton.module.css';
 
 export const GenerateButton: FC = () => {
-  const { generate } = usePayment();
+  const { amount, generate } = usePayment();
 
   // Function to trigger button click based on URL parameter
   const autoClickGenerateButton = () => {
@@ -22,12 +22,18 @@ export const GenerateButton: FC = () => {
     autoClickGenerateButton();
   }, []);
 
+  // Function to handle the button click
+  const handleClick = () => {
+    generate();
+  };
+
   return (
     <button
       className={css.root}
       type="button"
-      onClick={generate}
+      onClick={handleClick}
       id="generateNow"
+      disabled={!amount || amount.isLessThanOrEqualTo(0)}
     >
       Get the QR Code
     </button>
