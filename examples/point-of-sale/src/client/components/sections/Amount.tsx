@@ -1,43 +1,86 @@
 import BigNumber from 'bignumber.js';
-import React, { FC, useMemo, useEffect } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useConfig } from '../../hooks/useConfig';
-import { NON_BREAKING_SPACE } from '../../utils/constants';
+import { usePayment } from '../../hooks/usePayment';
+import { Digits } from '../../types';
+import { BackspaceIcon } from '../images/BackspaceIcon';
+import css from './NumPad.module.css';
 
-export interface AmountProps {
-    amount: BigNumber | undefined;
-    showZero?: boolean;
+interface NumPadInputButton {
+    input: Digits | '.';
+    onInput(key: Digits | '.'): void;
 }
 
-export const Amount: FC<AmountProps> = ({ amount, showZero }) => {
-    const { minDecimals } = useConfig();
+const NumPadButton: FC<NumPadInputButton> = ({ input, onInput }) => {
+    const onClick = useCallback(() => onInput(input), [onInput, input]);
+    return (
+        <button className={css.button} type="button" onClick={onClick}>
+            {input}
+        </button>
+    );
+};
 
-    const value = useMemo(() => {
-        if (!amount) return NON_BREAKING_SPACE;
-        if (amount.isGreaterThan(0)) {
-            const decimals = amount.decimalPlaces() ?? 0;
-            return amount.toFormat(decimals < minDecimals ? minDecimals : decimals);
-        } else {
-            return showZero ? '0' : NON_BREAKING_SPACE;
-        }
-    }, [amount, minDecimals, showZero]);
+export const NumPad: FC = () => {
+    const { symbol, decimals } = useConfig();
+    const regExp = useMemo(() => new RegExp('^\\d*([.,]\\d{0,' + decimals + '})?$'), [decimals]);
 
-    // Function to extract ammountValue from URL
-    const extractAmmountValueFromURL = () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const ammountValue = urlParams.get("ammountValue");
+    const [value, setValue] = useState('0');
+    const onInput = useCallback(
+        (key: Digits | '.') =>
+            setValue((value) => {
+                let newValue = (value + key).trim().replace(/^0{2,}/, '0');
+                if (newValue) {
+                    newValue = /^[.,]/.test(newValue) ? `0${newValue}` : newValue.replace(/^0+(\d)/, '$1');
+                    if (regExp.test(newValue)) return newValue;
+                }
+                return value;
+            }),
+        [regExp]
+    );
+    const onBackspace = useCallback(() => setValue((value) => (value.length ? value.slice(0, -1) || '0' : value)), []);
 
-        if (ammountValue) {
-            // Update the value with the value from the URL
-            const ammountValueElement = document.getElementById("ammountValue");
-            if (ammountValueElement) {
-                ammountValueElement.textContent = ammountValue;
-            }
-        }
-    };
+    const { setAmount } = usePayment();
 
+    // Mengambil nilai "ammountValue" dari URL
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const ammountValue = urlSearchParams.get("ammountValue");
+
+    // Mengatur nilai awal berdasarkan "ammountValue"
     useEffect(() => {
-        extractAmmountValueFromURL();
-    }, []);
+        if (ammountValue) {
+            setValue(ammountValue);
+            setAmount(new BigNumber(ammountValue));
+        }
+    }, [ammountValue, setAmount]);
 
-    return <span id="ammountValue">{value}</span>;
+    return (
+        <div className={css.root}>
+            <div className={css.text}>Enter amount in {symbol}</div>
+            <div className={css.value} id="importValue">{value}</div>
+            <div className={css.buttons}>
+                <div className={css.row}>
+                    <NumPadButton input={1} onInput={onInput} />
+                    <NumPadButton input={2} onInput={onInput} />
+                    <NumPadButton input={3} onInput={onInput} />
+                </div>
+                <div className={css.row}>
+                    <NumPadButton input={4} onInput={onInput} />
+                    <NumPadButton input={5} onInput={onInput} />
+                    <NumPadButton input={6} onInput={onInput} />
+                </div>
+                <div className={css.row}>
+                    <NumPadButton input={7} onInput={onInput} />
+                    <NumPadButton input={8} onInput={onInput} />
+                    <NumPadButton input={9} onInput={onInput} />
+                </div>
+                <div className={css.row}>
+                    <NumPadButton input="." onInput={onInput} />
+                    <NumPadButton input={0} onInput={onInput} />
+                    <button className={css.button} type="button" onClick={onBackspace}>
+                        <BackspaceIcon />
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
 };
