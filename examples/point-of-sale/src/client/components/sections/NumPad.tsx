@@ -23,21 +23,26 @@ export const NumPad: FC = () => {
     const { symbol, decimals } = useConfig();
     const regExp = useMemo(() => new RegExp('^\\d*([.,]\\d{0,' + decimals + '})?$'), [decimals]);
 
-    const [value, setValue] = useState('0');
+    const [value, setValue] = useState<string>('0');
     const onInput = useCallback(
-        (key: Digits | '.') =>
-            setValue((value) => {
-                let newValue = (value + key).trim().replace(/^0{2,}/, '0');
+        (key: Digits | '.') => {
+            setValue((currentValue) => {
+                const newValue = (currentValue + key).trim().replace(/^0{2,}/, '0');
                 if (newValue) {
-                    newValue = /^[.,]/.test(newValue) ? `0${newValue}` : newValue.replace(/^0+(\d)/, '$1');
-                    if (regExp.test(newValue)) return newValue;
+                    if (/^[.,]/.test(newValue)) {
+                        return `0${newValue}`;
+                    }
+                    return newValue.replace(/^0+(\d)/, '$1');
                 }
-                return value;
-            }),
-        [regExp]
+                return currentValue;
+            });
+        },
+        []
     );
 
-    const onBackspace = useCallback(() => setValue((value) => (value.length ? value.slice(0, -1) || '0' : value)), []);
+    const onBackspace = useCallback(() => {
+        setValue((currentValue) => (currentValue.length ? currentValue.slice(0, -1) || '0' : '0'));
+    }, []);
 
     const { setAmount } = usePayment();
 
@@ -48,7 +53,7 @@ export const NumPad: FC = () => {
     useEffect(() => {
         // Mengatur nilai "value" ke "amountValue" dari URL
         setValue(amountValue);
-        setAmount(amountValue ? new BigNumber(amountValue) : undefined);
+        setAmount(amountValue ? parseFloat(amountValue) : undefined);
     }, [setAmount, amountValue]);
 
     return (
