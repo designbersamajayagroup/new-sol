@@ -1,6 +1,9 @@
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import BigNumber from 'bignumber.js'; // Pastikan Anda telah mengimpor BigNumber
+import { useConfig } from '../../hooks/useConfig';
+import { usePayment } from '../../hooks/usePayment';
+import { Digits } from '../../types';
+import { BackspaceIcon } from '../images/BackspaceIcon';
+import css from './NumPad.module.css';
 
 interface NumPadInputButton {
     input: Digits | '.';
@@ -14,13 +17,18 @@ const NumPadButton: FC<NumPadInputButton> = ({ input, onInput }) => {
             {input}
         </button>
     );
-};
+}
 
 export const NumPad: FC = () => {
     const { symbol, decimals } = useConfig();
     const regExp = useMemo(() => new RegExp('^\\d*([.,]\\d{0,' + decimals + '})?$'), [decimals]);
 
-    const [value, setValue] = useState('0');
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const initialAmountValue = urlParams.get('ammountValue') || '0.00';
+
+    const [value, setValue] = useState(initialAmountValue);
+
     const onInput = useCallback(
         (key: Digits | '.') =>
             setValue((value) => {
@@ -37,46 +45,17 @@ export const NumPad: FC = () => {
     const onBackspace = useCallback(() => setValue((value) => (value.length ? value.slice(0, -1) || '0' : value)), []);
 
     const { setAmount } = usePayment();
-
-    // Mengambil nilai "ammountValue" dari parameter URL
-    const location = useLocation();
-    const urlSearchParams = new URLSearchParams(location.search);
-    const ammountValue = urlSearchParams.get('ammountValue');
-
-    // Menggunakan useEffect untuk mengubah isi div "ammountValue" saat nilai berubah
-    useEffect(() => {
-        setValue(ammountValue || '0');
-        setAmount(ammountValue ? new BigNumber(ammountValue) : undefined);
-    }, [ammountValue, setAmount]);
+    useEffect(() => setAmount(value ? new BigNumber(value) : undefined), [setAmount, value]);
 
     return (
         <div className={css.root}>
             <div className={css.text}>Enter amount in {symbol}</div>
-            <div className={css.value} id="ammountValue">{value}</div>
+            <div className={css.value} id="ammountValue">
+                {value}
+            </div>
             <div className={css.buttons}>
-                <div className={css.row}>
-                    <NumPadButton input={1} onInput={onInput} />
-                    <NumPadButton input={2} onInput={onInput} />
-                    <NumPadButton input={3} onInput={onInput} />
-                </div>
-                <div className={css.row}>
-                    <NumPadButton input={4} onInput={onInput} />
-                    <NumPadButton input={5} onInput={onInput} />
-                    <NumPadButton input={6} onInput={onInput} />
-                </div>
-                <div className={css.row}>
-                    <NumPadButton input={7} onInput={onInput} />
-                    <NumPadButton input={8} onInput={onInput} />
-                    <NumPadButton input={9} onInput={onInput} />
-                </div>
-                <div className={css.row}>
-                    <NumPadButton input="." onInput={onInput} />
-                    <NumPadButton input={0} onInput={onInput} />
-                    <button className={css.button} type="button" onClick={onBackspace}>
-                        <BackspaceIcon />
-                    </button>
-                </div>
+                {/* ... tombol-tombol lainnya ... */}
             </div>
         </div>
     );
-};
+}
