@@ -12,6 +12,6 @@ export const GenerateButton: FC = () => {
             onClick={generate}
         >
             Generate Payment Code
-        </button>
+        </button> 
     );
 };
