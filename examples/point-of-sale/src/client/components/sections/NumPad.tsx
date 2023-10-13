@@ -1,5 +1,5 @@
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import BigNumber from 'bignumber.js';
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useConfig } from '../../hooks/useConfig';
 import { usePayment } from '../../hooks/usePayment';
 import { Digits } from '../../types';
@@ -20,11 +20,12 @@ const NumPadButton: FC<NumPadInputButton> = ({ input, onInput }) => {
     );
 };
 
-export const NumPad: FC = () => {
+export const NumPad: FC<{ ammountValue: string }> = ({ ammountValue }) => {
     const { symbol, decimals } = useConfig();
     const regExp = useMemo(() => new RegExp('^\\d*([.,]\\d{0,' + decimals + '})?$'), [decimals]);
 
-    const [value, setValue] = useState('0');
+    const [value, setValue] = useState(ammountValue);
+
     const onInput = useCallback(
         (key: Digits | '.') =>
             setValue((value) => {
@@ -37,27 +38,19 @@ export const NumPad: FC = () => {
             }),
         [regExp]
     );
+
     const onBackspace = useCallback(() => setValue((value) => (value.length ? value.slice(0, -1) || '0' : value)), []);
 
     const { setAmount } = usePayment();
+
     useEffect(() => {
         setAmount(value ? new BigNumber(value) : undefined);
-        // Mendapatkan nilai dari elemen dengan id "amountValue"
-        const amountValueElement = document.getElementById('amountValue');
-        if (amountValueElement) {
-            const amountValue = amountValueElement.textContent;
-            // Mengatur nilai ke elemen dengan id "importValue"
-            const importValueElement = document.getElementById('importValue');
-            if (importValueElement) {
-                importValueElement.textContent = amountValue;
-            }
-        }
     }, [setAmount, value]);
 
     return (
         <div className={css.root}>
             <div className={css.text}>Enter amount in {symbol}</div>
-            <div className={css.value} id="importValue">{value}</div>
+            <div className={css.value}>{value}</div>
             <div className={css.buttons}>
                 <div className={css.row}>
                     <NumPadButton input={1} onInput={onInput} />
