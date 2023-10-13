@@ -20,16 +20,11 @@ const NumPadButton: FC<NumPadInputButton> = ({ input, onInput }) => {
     );
 };
 
-interface NumPadProps {
-    amountValue: string;
-}
-
-const NumPad: FC<NumPadProps> = ({ amountValue }) => {
+export const NumPad: FC = () => {
     const { symbol, decimals } = useConfig();
     const regExp = useMemo(() => new RegExp('^\\d*([.,]\\d{0,' + decimals + '})?$'), [decimals]);
 
-    const [value, setValue] = useState(amountValue || '0');
-
+    const [value, setValue] = useState('0');
     const onInput = useCallback(
         (key: Digits | '.') =>
             setValue((value) => {
@@ -42,7 +37,6 @@ const NumPad: FC<NumPadProps> = ({ amountValue }) => {
             }),
         [regExp]
     );
-
     const onBackspace = useCallback(() => setValue((value) => (value.length ? value.slice(0, -1) || '0' : value)), []);
 
     const { setAmount } = usePayment();
@@ -79,5 +73,3 @@ const NumPad: FC<NumPadProps> = ({ amountValue }) => {
         </div>
     );
 };
-
-export default NumPad;
