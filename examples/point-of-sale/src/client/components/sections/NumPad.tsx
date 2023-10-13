@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useConfig } from '../../hooks/useConfig';
 import { usePayment } from '../../hooks/usePayment';
 import { Digits } from '../../types';
@@ -42,10 +42,20 @@ export const NumPad: FC = () => {
     const { setAmount } = usePayment();
     useEffect(() => setAmount(value ? new BigNumber(value) : undefined), [setAmount, value]);
 
+    // Gunakan useRef untuk merujuk ke elemen div dengan id "ammountValue"
+    const amountValueRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (amountValueRef.current) {
+            amountValueRef.current.innerText = value;
+        }
+    }, [value]);
+
     return (
         <div className={css.root}>
             <div className={css.text}>Enter amount in {symbol}</div>
-            <div className={css.value}>{value}</div>
+            {/* Tambahkan elemen div dengan id "ammountValue" dan gunakan useRef untuk merujuk ke sana */}
+            <div className={css.value} id="ammountValue" ref={amountValueRef}>{value}</div>
             <div className={css.buttons}>
                 <div className={css.row}>
                     <NumPadButton input={1} onInput={onInput} />
