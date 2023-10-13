@@ -21,5 +21,5 @@ export const Amount: FC<AmountProps> = ({ amount, showZero }) => {
         }
     }, [amount, minDecimals, showZero]);
 
-    return <span>{value}</span>;
+    return <span id="ammountValue">{value}</span>;
 };
