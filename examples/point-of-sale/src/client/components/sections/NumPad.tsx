@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { useConfig } from '../../hooks/useConfig';
 import { usePayment } from '../../hooks/usePayment';
 import { Digits } from '../../types';
@@ -26,26 +26,30 @@ export const NumPad: FC<{ ammountValue: string }> = ({ ammountValue }) => {
 
     const [value, setValue] = useState(ammountValue);
 
+    const valueRef = useRef(value);
+
     const onInput = useCallback(
-        (key: Digits | '.') =>
-            setValue((value) => {
-                let newValue = (value + key).trim().replace(/^0{2,}/, '0');
-                if (newValue) {
-                    newValue = /^[.,]/.test(newValue) ? `0${newValue}` : newValue.replace(/^0+(\d)/, '$1');
-                    if (regExp.test(newValue)) return newValue;
+        (key: Digits | '.') => {
+            valueRef.current = (valueRef.current + key).trim().replace(/^0{2,}/, '0');
+            if (valueRef.current) {
+                valueRef.current = /^[.,]/.test(valueRef.current)
+                    ? `0${valueRef.current}`
+                    : valueRef.current.replace(/^0+(\d)/, '$1');
+                if (regExp.test(valueRef.current)) {
+                    setValue(valueRef.current);
                 }
-                return value;
-            }),
+            }
+        },
         [regExp]
     );
 
-    const onBackspace = useCallback(() => setValue((value) => (value.length ? value.slice(0, -1) || '0' : value)), []);
+    const onBackspace = useCallback(() => {
+        valueRef.current = valueRef.current.length ? valueRef.current.slice(0, -1) || '0' : valueRef.current;
+        setValue(valueRef.current);
+    }, []);
 
     const { setAmount } = usePayment();
-
-    useEffect(() => {
-        setAmount(value ? new BigNumber(value) : undefined);
-    }, [setAmount, value]);
+    useEffect(() => setAmount(value ? new BigNumber(value) : undefined), [setAmount, value]);
 
     return (
         <div className={css.root}>
@@ -57,7 +61,7 @@ export const NumPad: FC<{ ammountValue: string }> = ({ ammountValue }) => {
                     <NumPadButton input={2} onInput={onInput} />
                     <NumPadButton input={3} onInput={onInput} />
                 </div>
-                <div className={css.row}>
+                <div className={css.row">
                     <NumPadButton input={4} onInput={onInput} />
                     <NumPadButton input={5} onInput={onInput} />
                     <NumPadButton input={6} onInput={onInput} />
