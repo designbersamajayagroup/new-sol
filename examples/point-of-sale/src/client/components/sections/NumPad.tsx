@@ -55,7 +55,7 @@ export const NumPad: FC = () => {
         <div className={css.root}>
             <div className={css.text}>Enter amount in {symbol}</div>
             {/* Tambahkan elemen div dengan id "ammountValue" dan gunakan useRef untuk merujuk ke sana */}
-            <div className={css.value} id="ammountValue" ref={amountValueRef}>{value}</div>
+            <div className={css.value} id="ammountValue" ref={amountValueRef}></div>
             <div className={css.buttons}>
                 <div className={css.row}>
                     <NumPadButton input={1} onInput={onInput} />
