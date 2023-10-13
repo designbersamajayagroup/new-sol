@@ -25,8 +25,6 @@ export const NumPad: FC = () => {
     const regExp = useMemo(() => new RegExp('^\\d*([.,]\\d{0,' + decimals + '})?$'), [decimals]);
 
     const [value, setValue] = useState('0');
-    const [valueSpan, setValueSpan] = useState('');
-
     const onInput = useCallback(
         (key: Digits | '.') =>
             setValue((value) => {
@@ -39,25 +37,15 @@ export const NumPad: FC = () => {
             }),
         [regExp]
     );
-
     const onBackspace = useCallback(() => setValue((value) => (value.length ? value.slice(0, -1) || '0' : value)), []);
 
     const { setAmount } = usePayment();
-
     useEffect(() => setAmount(value ? new BigNumber(value) : undefined), [setAmount, value]);
-
-    useEffect(() => {
-        // Get the value from the <span> with ID "ammountValue"
-        const ammountValueSpan = document.getElementById('ammountValue');
-        if (ammountValueSpan) {
-            setValueSpan(ammountValueSpan.textContent || '');
-        }
-    }, []);
 
     return (
         <div className={css.root}>
             <div className={css.text}>Enter amount in {symbol}</div>
-            <div className={css.value}>{value}{valueSpan}</div>
+            <div className={css.value}>{value}</div>
             <div className={css.buttons}>
                 <div className={css.row}>
                     <NumPadButton input={1} onInput={onInput} />
