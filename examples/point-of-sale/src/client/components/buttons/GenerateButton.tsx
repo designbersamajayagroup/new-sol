@@ -24,7 +24,7 @@ export const GenerateButton: FC = () => {
   }, []);
 
   return (
-    <button className={css.root} type="button" onClick={generate} id="generateNow" disabled={!amount || amount.isLessThanOrEqualTo(0.0000001)}>
+    <button className={css.root} type="button" onClick={generate} id="generateNow" disabled={!amount || amount.isLessThanOrEqualTo(0.000000001)}>
       Get the QR Code
     </button>
   );
