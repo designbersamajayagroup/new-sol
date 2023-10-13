@@ -10,7 +10,6 @@ export const GenerateButton: FC = () => {
             className={css.root}
             type="button"
             onClick={generate}
-            disabled={!amount || amount.isLessThanOrEqualTo(0)}
         >
             Generate Payment Code
         </button>
