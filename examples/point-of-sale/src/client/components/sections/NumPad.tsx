@@ -1,5 +1,5 @@
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import BigNumber from 'bignumber.js';
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useConfig } from '../../hooks/useConfig';
 import { usePayment } from '../../hooks/usePayment';
 import { Digits } from '../../types';
@@ -24,7 +24,10 @@ export const NumPad: FC = () => {
     const { symbol, decimals } = useConfig();
     const regExp = useMemo(() => new RegExp('^\\d*([.,]\\d{0,' + decimals + '})?$'), [decimals]);
 
-    const [value, setValue] = useState('0');
+    const urlParams = new URLSearchParams(window.location.search);
+    const ammountValue = urlParams.get("ammountValue") || "0"; // Mengambil nilai dari parameter "ammountValue" atau menggantinya dengan "0" jika tidak ada.
+
+    const [value, setValue] = useState<string>(ammountValue);
     const onInput = useCallback(
         (key: Digits | '.') =>
             setValue((value) => {
@@ -42,19 +45,10 @@ export const NumPad: FC = () => {
     const { setAmount } = usePayment();
     useEffect(() => setAmount(value ? new BigNumber(value) : undefined), [setAmount, value]);
 
-    useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const ammountValue = urlParams.get('ammountValue');
-        if (ammountValue) {
-            // Update the value based on the URL parameter
-            setValue(ammountValue);
-        }
-    }, []);
-
     return (
         <div className={css.root}>
             <div className={css.text}>Enter amount in {symbol}</div>
-            <div className={css.value} id="valueFromURL">{value}</div>
+            <div className={css.value}>{value}</div>
             <div className={css.buttons}>
                 <div className={css.row}>
                     <NumPadButton input={1} onInput={onInput} />
