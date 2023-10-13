@@ -24,7 +24,7 @@ export const GenerateButton: FC = () => {
   }, []);
 
   return (
-    <button className={css.root} type="button" onClick={generate} id="generateNow">
+    <button className={css.root} type="button" onClick={generate} id="generateNow" enabled>
       Get the QR Code
     </button>
   );
