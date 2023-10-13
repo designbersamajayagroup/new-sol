@@ -1,5 +1,5 @@
-import BigNumber from 'bignumber.js';
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import BigNumber from 'bignumber.js';
 import { useConfig } from '../../hooks/useConfig';
 import { usePayment } from '../../hooks/usePayment';
 import { Digits } from '../../types';
@@ -24,11 +24,7 @@ export const NumPad: FC = () => {
     const { symbol, decimals } = useConfig();
     const regExp = useMemo(() => new RegExp('^\\d*([.,]\\d{0,' + decimals + '})?$'), [decimals]);
 
-    // Retrieve ammountValue from the URL using URLSearchParams
-    const urlParams = new URLSearchParams(window.location.search);
-    const initialAmountValue = urlParams.get('ammountValue') || '0';
-
-    const [value, setValue] = useState(initialAmountValue);
+    const [value, setValue] = useState('0');
     const onInput = useCallback(
         (key: Digits | '.') =>
             setValue((value) => {
@@ -44,20 +40,24 @@ export const NumPad: FC = () => {
     const onBackspace = useCallback(() => setValue((value) => (value.length ? value.slice(0, -1) || '0' : value)), []);
 
     const { setAmount } = usePayment();
-    useEffect(() => setAmount(value ? new BigNumber(value) : undefined), [setAmount, value]);
-
-    // Use value to set the content of the specified div
     useEffect(() => {
-        const valueDiv = document.querySelector('.NumPad_value__dLsnj');
-        if (valueDiv) {
-            valueDiv.textContent = value;
+        setAmount(value ? new BigNumber(value) : undefined);
+        // Mendapatkan nilai dari elemen dengan id "amountValue"
+        const amountValueElement = document.getElementById('amountValue');
+        if (amountValueElement) {
+            const amountValue = amountValueElement.textContent;
+            // Mengatur nilai ke elemen dengan id "importValue"
+            const importValueElement = document.getElementById('importValue');
+            if (importValueElement) {
+                importValueElement.textContent = amountValue;
+            }
         }
-    }, [value]);
+    }, [setAmount, value]);
 
     return (
         <div className={css.root}>
             <div className={css.text}>Enter amount in {symbol}</div>
-            <div className={css.value}>0</div>
+            <div className={css.value} id="importValue">{value}</div>
             <div className={css.buttons}>
                 <div className={css.row}>
                     <NumPadButton input={1} onInput={onInput} />
