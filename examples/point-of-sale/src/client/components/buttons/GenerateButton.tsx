@@ -11,7 +11,7 @@ export const GenerateButton: FC = () => {
             type="button"
             onClick={generate}
         >
-            Generate Payment Code
+            Get the QR Code
         </button> 
     );
 };
