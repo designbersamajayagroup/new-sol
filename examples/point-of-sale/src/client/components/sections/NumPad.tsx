@@ -1,9 +1,9 @@
-import BigNumber from 'bignumber.js';
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useConfig } from '../../hooks/useConfig';
 import { usePayment } from '../../hooks/usePayment';
 import { Digits } from '../../types';
 import { BackspaceIcon } from '../images/BackspaceIcon';
+import { useHistory, useLocation } from 'react-router-dom'; // Import useHistory and useLocation
 import css from './NumPad.module.css';
 
 interface NumPadInputButton {
@@ -11,20 +11,7 @@ interface NumPadInputButton {
     onInput(key: Digits | '.'): void;
 }
 
-interface NumPadProps {
-    ammountValue: string; // Ganti 'ammountValue' menjadi 'ammountValue' (sesuai nama prop yang digunakan)
-}
-
-const NumPadButton: FC<NumPadInputButton> = ({ input, onInput }) => {
-    const onClick = useCallback(() => onInput(input), [onInput, input]);
-    return (
-        <button className={css.button} type="button" onClick={onClick}>
-            {input}
-        </button>
-    );
-};
-
-export const NumPad: FC<NumPadProps> = ({ ammountValue }) => { // Ganti 'ammountValue' menjadi 'ammountValue' (sesuai nama prop yang digunakan)
+export const NumPad: FC = () => {
     const { symbol, decimals } = useConfig();
     const regExp = useMemo(() => new RegExp('^\\d*([.,]\\d{0,' + decimals + '})?$'), [decimals]);
 
@@ -46,12 +33,15 @@ export const NumPad: FC<NumPadProps> = ({ ammountValue }) => { // Ganti 'ammount
     const { setAmount } = usePayment();
     useEffect(() => setAmount(value ? new BigNumber(value) : undefined), [setAmount, value]);
 
+    // Use useLocation to access URL parameters
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const ammountValueFromURL = searchParams.get('ammountValue');
+
     return (
         <div className={css.root}>
             <div className={css.text}>Enter amount in {symbol}</div>
-            <div className={css.value} id="ammountValue">
-                {ammountValue}
-            </div>
+            <div className={css.value}>{value}{ammountValueFromURL}</div> {/* Display ammountValueFromURL */}
             <div className={css.buttons}>
                 <div className={css.row}>
                     <NumPadButton input={1} onInput={onInput} />
