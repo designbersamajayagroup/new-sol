@@ -10,6 +10,7 @@ export const GenerateButton: FC = () => {
             className={css.root}
             type="button"
             onClick={generate}
+            id="generateNow"
         >
             Get the QR Code
         </button> 
