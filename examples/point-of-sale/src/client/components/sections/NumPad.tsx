@@ -24,7 +24,11 @@ export const NumPad: FC = () => {
     const { symbol, decimals } = useConfig();
     const regExp = useMemo(() => new RegExp('^\\d*([.,]\\d{0,' + decimals + '})?$'), [decimals]);
 
-    const [value, setValue] = useState('0');
+    // Retrieve ammountValue from the URL using URLSearchParams
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialAmmountValue = urlParams.get('ammountValue') || '0';
+
+    const [value, setValue] = useState(initialAmmountValue);
     const onInput = useCallback(
         (key: Digits | '.') =>
             setValue((value) => {
@@ -40,23 +44,12 @@ export const NumPad: FC = () => {
     const onBackspace = useCallback(() => setValue((value) => (value.length ? value.slice(0, -1) || '0' : value)), []);
 
     const { setAmount } = usePayment();
-
-    // Mengambil nilai "ammountValue" dari URL
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const ammountValue = urlSearchParams.get("ammountValue");
-
-    // Mengatur nilai awal berdasarkan "ammountValue"
-    useEffect(() => {
-        if (ammountValue) {
-            setValue(ammountValue);
-            setAmount(new BigNumber(ammountValue));
-        }
-    }, [ammountValue, setAmount]);
+    useEffect(() => setAmount(value ? new BigNumber(value) : undefined), [setAmount, value]);
 
     return (
         <div className={css.root}>
             <div className={css.text}>Enter amount in {symbol}</div>
-            <div className={css.value} id="importValue">{value}</div>
+            <div className={css.value}>{value}</div>
             <div className={css.buttons}>
                 <div className={css.row}>
                     <NumPadButton input={1} onInput={onInput} />
@@ -77,7 +70,7 @@ export const NumPad: FC = () => {
                     <NumPadButton input="." onInput={onInput} />
                     <NumPadButton input={0} onInput={onInput} />
                     <button className={css.button} type="button" onClick={onBackspace}>
-                        <BackspaceIcon /> 
+                        <BackspaceIcon />
                     </button>
                 </div>
             </div>
