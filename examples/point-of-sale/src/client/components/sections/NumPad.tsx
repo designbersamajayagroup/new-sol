@@ -5,6 +5,7 @@ import { usePayment } from '../../hooks/usePayment';
 import { Digits } from '../../types';
 import { BackspaceIcon } from '../images/BackspaceIcon';
 import css from './NumPad.module.css';
+import { useLocation } from 'react-router-dom';
 
 interface NumPadInputButton {
     input: Digits | '.';
@@ -24,10 +25,7 @@ export const NumPad: FC = () => {
     const { symbol, decimals } = useConfig();
     const regExp = useMemo(() => new RegExp('^\\d*([.,]\\d{0,' + decimals + '})?$'), [decimals]);
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const ammountValue = urlParams.get("ammountValue") || "0"; // Mengambil nilai dari parameter "ammountValue" atau menggantinya dengan "0" jika tidak ada.
-
-    const [value, setValue] = useState<string>(ammountValue);
+    const [value, setValue] = useState('0');
     const onInput = useCallback(
         (key: Digits | '.') =>
             setValue((value) => {
@@ -45,10 +43,19 @@ export const NumPad: FC = () => {
     const { setAmount } = usePayment();
     useEffect(() => setAmount(value ? new BigNumber(value) : undefined), [setAmount, value]);
 
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const initialAmount = searchParams.get("ammountValue") || '0.00';
+
+    useEffect(() => {
+        // Set initial value from URL parameter "ammountValue"
+        setValue(initialAmount);
+    }, [initialAmount]);
+
     return (
         <div className={css.root}>
             <div className={css.text}>Enter amount in {symbol}</div>
-            <div className={css.value}>{value}</div>
+            <div className={css.value} id="ammountValueURL">{value}</div>
             <div className={css.buttons}>
                 <div className={css.row}>
                     <NumPadButton input={1} onInput={onInput} />
