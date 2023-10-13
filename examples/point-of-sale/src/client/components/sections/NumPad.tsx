@@ -3,13 +3,21 @@ import { useConfig } from '../../hooks/useConfig';
 import { usePayment } from '../../hooks/usePayment';
 import { Digits } from '../../types';
 import { BackspaceIcon } from '../images/BackspaceIcon';
-import { useHistory, useLocation } from 'react-router-dom'; // Import useHistory and useLocation
 import css from './NumPad.module.css';
 
 interface NumPadInputButton {
     input: Digits | '.';
     onInput(key: Digits | '.'): void;
 }
+
+const NumPadButton: FC<NumPadInputButton> = ({ input, onInput }) => {
+    const onClick = useCallback(() => onInput(input), [onInput, input]);
+    return (
+        <button className={css.button} type="button" onClick={onClick}>
+            {input}
+        </button>
+    );
+};
 
 export const NumPad: FC = () => {
     const { symbol, decimals } = useConfig();
@@ -28,20 +36,27 @@ export const NumPad: FC = () => {
             }),
         [regExp]
     );
+
     const onBackspace = useCallback(() => setValue((value) => (value.length ? value.slice(0, -1) || '0' : value)), []);
 
     const { setAmount } = usePayment();
-    useEffect(() => setAmount(value ? new BigNumber(value) : undefined), [setAmount, value]);
 
-    // Use useLocation to access URL parameters
-    const location = useLocation();
-    const searchParams = new URLSearchParams(location.search);
-    const ammountValueFromURL = searchParams.get('ammountValue');
+    // Mengambil nilai "ammountValue" dari URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const amountValue = urlParams.get('ammountValue') || '0';
+
+    useEffect(() => {
+        // Mengatur nilai "value" ke "amountValue" dari URL
+        setValue(amountValue);
+        setAmount(amountValue ? new BigNumber(amountValue) : undefined);
+    }, [setAmount, amountValue]);
 
     return (
         <div className={css.root}>
             <div className={css.text}>Enter amount in {symbol}</div>
-            <div className={css.value}>{value}{ammountValueFromURL}</div> {/* Display ammountValueFromURL */}
+            <div className={css.value} id="valueFromURL">
+                {value}
+            </div>
             <div className={css.buttons}>
                 <div className={css.row}>
                     <NumPadButton input={1} onInput={onInput} />
