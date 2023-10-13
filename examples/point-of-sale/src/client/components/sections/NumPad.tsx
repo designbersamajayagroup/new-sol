@@ -42,17 +42,15 @@ export const NumPad: FC = () => {
   const { setAmount } = usePayment();
   useEffect(() => setAmount(value ? new BigNumber(value) : undefined), [setAmount, value]);
 
-  // Ambil parameter "ammountValue" dari URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const ammountValue = urlParams.get("ammountValue");
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const ammountValue = urlParams.get("ammountValue");
+    const ammountValueDiv = document.getElementById("ammountValue");
 
-  // Cari elemen div dengan id "ammountValue"
-  const ammountValueDiv = document.getElementById("ammountValue");
-
-  // Jika parameter "ammountValue" ada, isi teks div dengan nilainya
-  if (ammountValueDiv && ammountValue) {
-    ammountValueDiv.textContent = ammountValue;
-  }
+    if (ammountValueDiv && ammountValue) {
+      ammountValueDiv.textContent = ammountValue;
+    }
+  }, []);
 
   return (
     <div className={css.root}>
