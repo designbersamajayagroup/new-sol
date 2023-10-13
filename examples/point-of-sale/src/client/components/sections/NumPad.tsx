@@ -4,6 +4,7 @@ import { usePayment } from '../../hooks/usePayment';
 import { Digits } from '../../types';
 import { BackspaceIcon } from '../images/BackspaceIcon';
 import css from './NumPad.module.css';
+import { useLocation } from 'react-router-dom';
 
 interface NumPadInputButton {
     input: Digits | '.';
@@ -17,18 +18,13 @@ const NumPadButton: FC<NumPadInputButton> = ({ input, onInput }) => {
             {input}
         </button>
     );
-}
+};
 
 export const NumPad: FC = () => {
     const { symbol, decimals } = useConfig();
     const regExp = useMemo(() => new RegExp('^\\d*([.,]\\d{0,' + decimals + '})?$'), [decimals]);
 
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    const initialAmountValue = urlParams.get('ammountValue') || '0.00';
-
-    const [value, setValue] = useState(initialAmountValue);
-
+    const [value, setValue] = useState('0');
     const onInput = useCallback(
         (key: Digits | '.') =>
             setValue((value) => {
@@ -41,21 +37,46 @@ export const NumPad: FC = () => {
             }),
         [regExp]
     );
-
     const onBackspace = useCallback(() => setValue((value) => (value.length ? value.slice(0, -1) || '0' : value)), []);
 
     const { setAmount } = usePayment();
     useEffect(() => setAmount(value ? new BigNumber(value) : undefined), [setAmount, value]);
 
+    // Dapatkan nilai 'ammountValue' dari parameter URL
+    const location = useLocation();
+    const ammountValue = new URLSearchParams(location.search).get('ammountValue');
+
     return (
         <div className={css.root}>
             <div className={css.text}>Enter amount in {symbol}</div>
-            <div className={css.value} id="ammountValue">
+            <div className={css.value}>
                 {value}
+                {ammountValue}
             </div>
             <div className={css.buttons}>
-                {/* ... tombol-tombol lainnya ... */}
+                <div className={css.row}>
+                    <NumPadButton input={1} onInput={onInput} />
+                    <NumPadButton input={2} onInput={onInput} />
+                    <NumPadButton input={3} onInput={onInput} />
+                </div>
+                <div className={css.row}>
+                    <NumPadButton input={4} onInput={onInput} />
+                    <NumPadButton input={5} onInput={onInput} />
+                    <NumPadButton input={6} onInput={onInput} />
+                </div>
+                <div className={css.row}>
+                    <NumPadButton input={7} onInput={onInput} />
+                    <NumPadButton input={8} onInput={onInput} />
+                    <NumPadButton input={9} onInput={onInput} />
+                </div>
+                <div className={css.row}>
+                    <NumPadButton input="." onInput={onInput} />
+                    <NumPadButton input={0} onInput={onInput} />
+                    <button className={css.button} type="button" onClick={onBackspace}>
+                        <BackspaceIcon />
+                    </button>
+                </div>
             </div>
         </div>
     );
-}
+};
