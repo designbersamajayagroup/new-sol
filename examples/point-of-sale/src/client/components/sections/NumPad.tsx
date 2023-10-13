@@ -1,4 +1,5 @@
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import BigNumber from 'bignumber.js';
 import { useConfig } from '../../hooks/useConfig';
 import { usePayment } from '../../hooks/usePayment';
 import { Digits } from '../../types';
@@ -23,45 +24,37 @@ export const NumPad: FC = () => {
     const { symbol, decimals } = useConfig();
     const regExp = useMemo(() => new RegExp('^\\d*([.,]\\d{0,' + decimals + '})?$'), [decimals]);
 
-    const [value, setValue] = useState<string>('0');
+    const [value, setValue] = useState('0');
     const onInput = useCallback(
-        (key: Digits | '.') => {
-            setValue((currentValue) => {
-                const newValue = (currentValue + key).trim().replace(/^0{2,}/, '0');
+        (key: Digits | '.') =>
+            setValue((value) => {
+                let newValue = (value + key).trim().replace(/^0{2,}/, '0');
                 if (newValue) {
-                    if (/^[.,]/.test(newValue)) {
-                        return `0${newValue}`;
-                    }
-                    return newValue.replace(/^0+(\d)/, '$1');
+                    newValue = /^[.,]/.test(newValue) ? `0${newValue}` : newValue.replace(/^0+(\d)/, '$1');
+                    if (regExp.test(newValue)) return newValue;
                 }
-                return currentValue;
-            });
-        },
-        []
+                return value;
+            }),
+        [regExp]
     );
-
-    const onBackspace = useCallback(() => {
-        setValue((currentValue) => (currentValue.length ? currentValue.slice(0, -1) || '0' : '0'));
-    }, []);
+    const onBackspace = useCallback(() => setValue((value) => (value.length ? value.slice(0, -1) || '0' : value)), []);
 
     const { setAmount } = usePayment();
-
-    // Mengambil nilai "ammountValue" dari URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const amountValue = urlParams.get('ammountValue') || '0';
+    useEffect(() => setAmount(value ? new BigNumber(value) : undefined), [setAmount, value]);
 
     useEffect(() => {
-        // Mengatur nilai "value" ke "amountValue" dari URL
-        setValue(amountValue);
-        setAmount(amountValue ? parseFloat(amountValue) : undefined);
-    }, [setAmount, amountValue]);
+        const urlParams = new URLSearchParams(window.location.search);
+        const ammountValue = urlParams.get('ammountValue');
+        if (ammountValue) {
+            // Update the value based on the URL parameter
+            setValue(ammountValue);
+        }
+    }, []);
 
     return (
         <div className={css.root}>
             <div className={css.text}>Enter amount in {symbol}</div>
-            <div className={css.value} id="valueFromURL">
-                {value}
-            </div>
+            <div className={css.value} id="valueFromURL">{value}</div>
             <div className={css.buttons}>
                 <div className={css.row}>
                     <NumPadButton input={1} onInput={onInput} />
